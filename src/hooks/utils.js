@@ -4,6 +4,7 @@ import {
   useReducer,
   useEffect,
   useLayoutEffect,
+  useState,
 } from 'react'
 import {
   scrollIntoView,
@@ -79,11 +80,11 @@ function getA11ySelectionMessage(selectionParameters) {
 }
 
 /**
- * Debounced call for updating the a11y message.
+ * Call for updating the a11y message.
  */
-const updateA11yStatus = debounce((getA11yMessage, document) => {
+const updateA11yStatus = (getA11yMessage, document) => {
   setStatus(getA11yMessage(), document)
-}, 200)
+};
 
 // istanbul ignore next
 const useIsomorphicLayoutEffect =
@@ -449,13 +450,16 @@ function useA11yMessageSetter(
   dependencyArray,
   {isInitialMount, highlightedIndex, items, environment, ...rest},
 ) {
+
+  const [updateA11yStatusDebounced] = useState(() => debounce(updateA11yStatus, 200));
+
   // Sets a11y status message on changes in state.
   useEffect(() => {
     if (isInitialMount) {
       return
     }
 
-    updateA11yStatus(
+    updateA11yStatusDebounced(
       () =>
         getA11yMessage({
           highlightedIndex,
